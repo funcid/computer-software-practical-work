@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 
 export async function getUser(req: NextRequest) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const token = cookieStore.get('token')?.value || 
                 req.headers.get('authorization')?.split(' ')[1];
 

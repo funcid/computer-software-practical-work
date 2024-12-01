@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
+import type { NextRequest } from 'next/server';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const user = await getUser(request);
     
