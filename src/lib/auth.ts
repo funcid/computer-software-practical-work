@@ -1,40 +1,16 @@
-import { headers } from 'next/headers';
-import jwt from 'jsonwebtoken';
-import prisma from './prisma';
+import { verifyToken } from './jwt';
+import { cookies } from 'next/headers';
+import { NextRequest } from 'next/server';
 
-export async function getUser(request: Request) {
-  const headersList = headers();
-  const authorization = headersList.get('authorization');
+export async function getUser(req: NextRequest) {
+  const cookieStore = cookies();
+  const token = cookieStore.get('token')?.value || 
+                req.headers.get('authorization')?.split(' ')[1];
 
-  if (!authorization?.startsWith('Bearer ')) {
+  if (!token) {
     return null;
   }
 
-  const token = authorization.substring(7);
-  return await verifyAuth(token);
-}
-
-export async function verifyAuth(token: string) {
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: number };
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId },
-    });
-    
-    if (!user) {
-      throw new Error('User not found');
-    }
-    
-    return user;
-  } catch {
-    throw new Error('Invalid token');
-  }
-}
-
-export function generateToken(userId: number): string {
-  return jwt.sign(
-    { userId },
-    process.env.JWT_SECRET!,
-    { expiresIn: '24h' }
-  );
+  const payload = verifyToken(token);
+  return payload;
 } 

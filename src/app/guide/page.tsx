@@ -127,7 +127,7 @@ export default function GuidePage() {
               Рекомендуемая литература
             </h3>
             <ul className="space-y-2 text-green-700 dark:text-green-400">
-              <li>• Учебник "Информатика" для 10 класса</li>
+              <li>• Учебник &quot;Информатика&quot; для 10 класса</li>
               <li>• Практикум по информатике</li>
               <li>• Сборник задач по информатике</li>
             </ul>
