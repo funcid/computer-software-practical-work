@@ -2,8 +2,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import TestResultsChart from "@/components/TestResultsChart";
-import Cookies from 'js-cookie';
 import GlobalTestsHistogram from '@/components/GlobalTestsHistogram';
 
 interface LastTestResult {

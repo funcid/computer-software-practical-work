@@ -29,7 +29,7 @@ export default function RegisterPage() {
       } else {
         setError(data.error || 'Ошибка регистрации');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Ошибка сервера');
     }
   };

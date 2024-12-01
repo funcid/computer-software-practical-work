@@ -82,23 +82,6 @@ export default function ProfilePage() {
     }));
   };
 
-  const getStreak = () => {
-    if (results.length === 0) return 0;
-    let streak = 0;
-    const today = new Date();
-    const sortedResults = [...results].sort((a, b) => 
-      new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
-    );
-
-    for (let i = 0; i < sortedResults.length; i++) {
-      const resultDate = new Date(sortedResults[i].completedAt);
-      const diffDays = Math.floor((today.getTime() - resultDate.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays <= i) streak++;
-      else break;
-    }
-    return streak;
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen p-8">
