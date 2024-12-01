@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
 
     const result = await prisma.testResult.create({
       data: {
-        userId: user.id,
+        userId: parseInt(user.id, 10),
         testType,
         score,
         maxScore,
