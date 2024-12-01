@@ -38,8 +38,7 @@ export async function middleware(request: NextRequest) {
           headers: requestHeaders,
         },
       });
-    } catch (_error) {
-      // Игнорируем ошибку или обрабатываем её
+    } catch {
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }

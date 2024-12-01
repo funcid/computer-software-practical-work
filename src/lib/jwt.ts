@@ -14,7 +14,7 @@ export function createToken(payload: TokenPayload): string {
 export function verifyToken(token: string): TokenPayload | null {
   try {
     return jwt.verify(token, JWT_SECRET) as TokenPayload;
-  } catch (_error) {
+  } catch {
     return null;
   }
 } 
