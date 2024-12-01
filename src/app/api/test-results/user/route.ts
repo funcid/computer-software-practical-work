@@ -16,14 +16,25 @@ export async function GET(request: NextRequest) {
 
     const userId = parseInt(payload.id, 10);
 
+    const results = await prisma.testResult.findMany({
+      where: {
+        userId: userId
+      },
+      orderBy: {
+        completedAt: 'desc'
+      }
+    });
+
     const totalResults = await prisma.testResult.count({
-      where: { userId }
+      where: {
+        userId: userId
+      }
     });
 
     const ranges = await Promise.all([
       prisma.testResult.count({
         where: {
-          userId,
+          userId: userId,
           percentage: {
             gte: 0,
             lt: 40
@@ -32,7 +43,7 @@ export async function GET(request: NextRequest) {
       }),
       prisma.testResult.count({
         where: {
-          userId,
+          userId: userId,
           percentage: {
             gte: 40,
             lt: 60
@@ -41,7 +52,7 @@ export async function GET(request: NextRequest) {
       }),
       prisma.testResult.count({
         where: {
-          userId,
+          userId: userId,
           percentage: {
             gte: 60,
             lt: 80
@@ -50,7 +61,7 @@ export async function GET(request: NextRequest) {
       }),
       prisma.testResult.count({
         where: {
-          userId,
+          userId: userId,
           percentage: {
             gte: 80,
             lte: 100
@@ -59,20 +70,11 @@ export async function GET(request: NextRequest) {
       })
     ]).then(counts => {
       return [
-        { min: 0, max: 39, count: counts[0], percentage: (counts[0] / totalResults) * 100 },
-        { min: 40, max: 59, count: counts[1], percentage: (counts[1] / totalResults) * 100 },
-        { min: 60, max: 79, count: counts[2], percentage: (counts[2] / totalResults) * 100 },
-        { min: 80, max: 100, count: counts[3], percentage: (counts[3] / totalResults) * 100 }
+        { min: 0, max: 39, count: counts[0], percentage: totalResults > 0 ? (counts[0] / totalResults) * 100 : 0 },
+        { min: 40, max: 59, count: counts[1], percentage: totalResults > 0 ? (counts[1] / totalResults) * 100 : 0 },
+        { min: 60, max: 79, count: counts[2], percentage: totalResults > 0 ? (counts[2] / totalResults) * 100 : 0 },
+        { min: 80, max: 100, count: counts[3], percentage: totalResults > 0 ? (counts[3] / totalResults) * 100 : 0 }
       ];
-    });
-
-    const results = await prisma.testResult.findMany({
-      where: {
-        userId
-      },
-      orderBy: {
-        completedAt: 'desc'
-      }
     });
 
     return NextResponse.json({
