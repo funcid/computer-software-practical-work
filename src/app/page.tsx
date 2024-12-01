@@ -33,16 +33,20 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    const token = Cookies.get('token') || localStorage.getItem('token');
+    const token = Cookies.get('token');
     setIsAuthenticated(!!token);
 
     if (token) {
       fetch('/api/test-results/last', {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       })
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error('Failed to fetch');
+          return res.json();
+        })
         .then(data => {
           if (data.result) {
             setLastResult(data.result);
@@ -72,7 +76,7 @@ export default function Home() {
       localStorage.removeItem('token');
       setIsAuthenticated(false);
       setLastResult(null);
-      router.refresh();
+      router.push('/login');
     } catch (error) {
       console.error('Logout error:', error);
     }
