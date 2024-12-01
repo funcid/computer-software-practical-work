@@ -1,93 +1,77 @@
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { getUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-import { verifyToken } from '@/lib/jwt';
-import { headers } from 'next/headers';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const headersList = await headers();
-    const token = headersList.get('authorization')?.split(' ')[1];
-
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const payload = await getUser(request);
+    
+    if (!payload) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
     }
 
-    const payload = verifyToken(token);
-    if (!payload?.id) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    const userId = parseInt(payload.id, 10);
 
     const totalResults = await prisma.testResult.count({
-      where: { userId: payload.id }
+      where: { userId }
     });
 
-    const ranges = await Promise.all(
-      Array.from({ length: 10 }, async (_, i) => {
-        const min = i * 10;
-        const max = (i + 1) * 10;
-        
-        const count = await prisma.testResult.count({
-          where: {
-            userId: payload.id,
-            percentage: {
-              gte: min,
-              lt: max,
-            },
-          },
-        });
-
-        return {
-          min,
-          max,
-          count,
-          percentage: totalResults > 0 ? Math.round((count / totalResults) * 100) : 0
-        };
+    const ranges = await Promise.all([
+      prisma.testResult.count({
+        where: {
+          userId,
+          percentage: {
+            gte: 0,
+            lt: 40
+          }
+        }
+      }),
+      prisma.testResult.count({
+        where: {
+          userId,
+          percentage: {
+            gte: 40,
+            lt: 60
+          }
+        }
+      }),
+      prisma.testResult.count({
+        where: {
+          userId,
+          percentage: {
+            gte: 60,
+            lt: 80
+          }
+        }
+      }),
+      prisma.testResult.count({
+        where: {
+          userId,
+          percentage: {
+            gte: 80,
+            lte: 100
+          }
+        }
       })
-    );
-
-    const stats = await prisma.testResult.aggregate({
-      where: { userId: payload.id },
-      _avg: {
-        percentage: true,
-        score: true,
-      },
-      _max: {
-        percentage: true,
-      },
-      _min: {
-        percentage: true,
-      },
-    });
-
-    const testTypeStats = await prisma.testResult.groupBy({
-      by: ['testType'],
-      where: { userId: payload.id },
-      _count: true,
-      _avg: {
-        percentage: true,
-      },
+    ]).then(counts => {
+      return [
+        { min: 0, max: 39, count: counts[0], percentage: (counts[0] / totalResults) * 100 },
+        { min: 40, max: 59, count: counts[1], percentage: (counts[1] / totalResults) * 100 },
+        { min: 60, max: 79, count: counts[2], percentage: (counts[2] / totalResults) * 100 },
+        { min: 80, max: 100, count: counts[3], percentage: (counts[3] / totalResults) * 100 }
+      ];
     });
 
     return NextResponse.json({
-      ranges,
-      stats: {
-        total: totalResults,
-        averagePercentage: Math.round(stats._avg.percentage || 0),
-        averageScore: Math.round(stats._avg.score || 0),
-        maxPercentage: Math.round(stats._max.percentage || 0),
-        minPercentage: Math.round(stats._min.percentage || 0),
-      },
-      testTypes: testTypeStats.map((type: { testType: string; _count: number; _avg: { percentage: number | null } }) => ({
-        type: type.testType,
-        count: type._count,
-        averagePercentage: Math.round(type._avg.percentage || 0)
-      }))
+      totalResults,
+      ranges
     });
-  } catch (error) {
-    console.error('Error fetching user stats:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch stats' }, 
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return NextResponse.json({ message: errorMessage }, { status: 500 });
   }
 } 
