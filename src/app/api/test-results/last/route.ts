@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { getUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const user = await getUser(request);
     
@@ -13,26 +14,18 @@ export async function GET(request: Request) {
       );
     }
 
-    const lastResult = await prisma.testResult.findFirst({
+    const result = await prisma.testResult.findFirst({
       where: {
         userId: user.id
       },
       orderBy: {
         completedAt: 'desc'
-      },
-      select: {
-        score: true,
-        maxScore: true,
-        completedAt: true
       }
     });
 
-    return NextResponse.json({ result: lastResult });
-  } catch (error) {
-    console.error('Error fetching last test result:', error);
-    return NextResponse.json(
-      { error: 'Server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ result });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return NextResponse.json({ message: errorMessage }, { status: 500 });
   }
 } 
