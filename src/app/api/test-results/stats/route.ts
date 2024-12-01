@@ -77,7 +77,7 @@ export async function GET() {
         maxPercentage: Math.round(stats._max.percentage || 0),
         minPercentage: Math.round(stats._min.percentage || 0),
       },
-      testTypes: testTypeStats.map(type => ({
+      testTypes: testTypeStats.map((type: { testType: string; _count: number; _avg: { percentage: number | null } }) => ({
         type: type.testType,
         count: type._count,
         averagePercentage: Math.round(type._avg.percentage || 0)
