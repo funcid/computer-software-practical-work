@@ -21,8 +21,50 @@ export async function GET(request: NextRequest) {
     });
 
     const ranges = await Promise.all([
-      // ... остальной код
-    ]);
+      prisma.testResult.count({
+        where: {
+          userId,
+          percentage: {
+            gte: 0,
+            lt: 40
+          }
+        }
+      }),
+      prisma.testResult.count({
+        where: {
+          userId,
+          percentage: {
+            gte: 40,
+            lt: 60
+          }
+        }
+      }),
+      prisma.testResult.count({
+        where: {
+          userId,
+          percentage: {
+            gte: 60,
+            lt: 80
+          }
+        }
+      }),
+      prisma.testResult.count({
+        where: {
+          userId,
+          percentage: {
+            gte: 80,
+            lte: 100
+          }
+        }
+      })
+    ]).then(counts => {
+      return [
+        { min: 0, max: 39, count: counts[0], percentage: (counts[0] / totalResults) * 100 },
+        { min: 40, max: 59, count: counts[1], percentage: (counts[1] / totalResults) * 100 },
+        { min: 60, max: 79, count: counts[2], percentage: (counts[2] / totalResults) * 100 },
+        { min: 80, max: 100, count: counts[3], percentage: (counts[3] / totalResults) * 100 }
+      ];
+    });
 
     const results = await prisma.testResult.findMany({
       where: {
