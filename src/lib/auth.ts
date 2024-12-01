@@ -4,9 +4,9 @@ import { NextRequest } from 'next/server';
 
 export async function getUser(req: NextRequest) {
   try {
-    const cookieStore = cookies();
-    const token = cookieStore.get('token')?.value || 
-                  req.headers.get('authorization')?.split(' ')[1];
+    // Получаем токен из заголовка Authorization
+    const token = req.headers.get('authorization')?.split(' ')[1] || 
+                 req.cookies.get('token')?.value;
 
     if (!token) {
       return null;
