@@ -14,9 +14,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const userId = parseInt(user.id, 10);
+
+    if (isNaN(userId)) {
+      throw new Error('Invalid user ID');
+    }
+
     const result = await prisma.testResult.findFirst({
       where: {
-        userId: parseInt(user.id, 10)
+        userId: {
+          equals: userId
+        }
       },
       orderBy: {
         completedAt: 'desc'

@@ -16,6 +16,11 @@ export async function POST(request: NextRequest) {
 
     const { testType, score, maxScore } = await request.json();
     const percentage = (score / maxScore) * 100;
+    const userId = parseInt(user.id, 10);
+
+    if (isNaN(userId)) {
+      throw new Error('Invalid user ID');
+    }
 
     const result = await prisma.testResult.create({
       data: {
@@ -23,11 +28,7 @@ export async function POST(request: NextRequest) {
         score,
         maxScore,
         percentage,
-        user: {
-          connect: {
-            id: parseInt(user.id, 10)
-          }
-        }
+        userId
       },
     });
 

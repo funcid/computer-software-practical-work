@@ -16,9 +16,15 @@ export async function GET(request: NextRequest) {
 
     const userId = parseInt(payload.id, 10);
 
+    if (isNaN(userId)) {
+      throw new Error('Invalid user ID');
+    }
+
     const results = await prisma.testResult.findMany({
       where: {
-        userId: userId
+        userId: {
+          equals: userId
+        }
       },
       orderBy: {
         completedAt: 'desc'
@@ -27,14 +33,18 @@ export async function GET(request: NextRequest) {
 
     const totalResults = await prisma.testResult.count({
       where: {
-        userId: userId
+        userId: {
+          equals: userId
+        }
       }
     });
 
     const ranges = await Promise.all([
       prisma.testResult.count({
         where: {
-          userId: userId,
+          userId: {
+            equals: userId
+          },
           percentage: {
             gte: 0,
             lt: 40
@@ -43,7 +53,9 @@ export async function GET(request: NextRequest) {
       }),
       prisma.testResult.count({
         where: {
-          userId: userId,
+          userId: {
+            equals: userId
+          },
           percentage: {
             gte: 40,
             lt: 60
@@ -52,7 +64,9 @@ export async function GET(request: NextRequest) {
       }),
       prisma.testResult.count({
         where: {
-          userId: userId,
+          userId: {
+            equals: userId
+          },
           percentage: {
             gte: 60,
             lt: 80
@@ -61,7 +75,9 @@ export async function GET(request: NextRequest) {
       }),
       prisma.testResult.count({
         where: {
-          userId: userId,
+          userId: {
+            equals: userId
+          },
           percentage: {
             gte: 80,
             lte: 100
