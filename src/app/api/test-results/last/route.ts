@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
 
     const result = await prisma.testResult.findFirst({
       where: {
-        userId: parseInt(user.id, 10)
+        user: {
+          id: parseInt(user.id, 10)
+        }
       },
       orderBy: {
         completedAt: 'desc'
