@@ -5,7 +5,6 @@ import { headers } from 'next/headers';
 
 export async function GET() {
   try {
-    // Получаем токен из заголовков
     const headersList = headers();
     const token = headersList.get('authorization')?.split(' ')[1];
 
@@ -13,18 +12,15 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Верифицируем токен и получаем id пользователя
     const payload = verifyToken(token);
     if (!payload?.id) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    // Получаем общее количество результатов пользователя
     const totalResults = await prisma.testResult.count({
       where: { userId: payload.id }
     });
 
-    // Получаем агрегированные данные по диапазонам для пользователя
     const ranges = await Promise.all(
       Array.from({ length: 10 }, async (_, i) => {
         const min = i * 10;
@@ -49,7 +45,6 @@ export async function GET() {
       })
     );
 
-    // Получаем дополнительную статистику пользователя
     const stats = await prisma.testResult.aggregate({
       where: { userId: payload.id },
       _avg: {
@@ -64,7 +59,6 @@ export async function GET() {
       },
     });
 
-    // Получаем статистику по типам тестов
     const testTypeStats = await prisma.testResult.groupBy({
       by: ['testType'],
       where: { userId: payload.id },
