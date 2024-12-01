@@ -1,9 +1,9 @@
 import { verifyToken } from './jwt';
 import { NextRequest } from 'next/server';
+import prisma from '@/lib/prisma';
 
 export async function getUser(req: NextRequest) {
   try {
-    // Получаем токен из заголовка Authorization
     const token = req.headers.get('authorization')?.split(' ')[1] || 
                  req.cookies.get('token')?.value;
 
@@ -13,20 +13,25 @@ export async function getUser(req: NextRequest) {
 
     const payload = verifyToken(token);
     
-    if (!payload || !payload.id) {
+    if (!payload || !payload.userId) {
       return null;
     }
 
-    // Убедимся, что ID существует и является числом
-    const userId = parseInt(payload.id, 10);
-    if (isNaN(userId)) {
-      console.error('Invalid user ID in token:', payload.id);
+    // Получаем пользователя из базы данных
+    const user = await prisma.user.findUnique({
+      where: {
+        id: payload.userId
+      }
+    });
+
+    if (!user) {
       return null;
     }
 
     return {
-      ...payload,
-      id: userId.toString() // Возвращаем ID как строку для совместимости
+      id: user.id.toString(),
+      email: user.email,
+      name: user.name
     };
   } catch (error) {
     console.error('Error in getUser:', error);
