@@ -264,7 +264,7 @@ export default function ProfilePage() {
                   <div key={result.id} className="py-4 first:pt-0 last:pb-0">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h3 className="font-semibold">Тестирование по теме "{result.testType}"</h3>
+                        <h3 className="font-semibold">Тестирование по теме &quot;{result.testType}&quot;</h3>
                         <p className="text-sm text-gray-500">{formatDate(result.completedAt)}</p>
                       </div>
                       <div className={`text-lg font-bold ${getGradeColor(result.percentage)}`}>

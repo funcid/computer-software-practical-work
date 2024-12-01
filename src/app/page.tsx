@@ -10,15 +10,6 @@ interface LastTestResult {
   completedAt: string;
 }
 
-interface TestResult {
-  id: number;
-  testType: string;
-  score: number;
-  maxScore: number;
-  percentage: number;
-  completedAt: string;
-}
-
 interface Range {
   min: number;
   max: number;
