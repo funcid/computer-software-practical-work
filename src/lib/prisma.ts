@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'production') {
   if (!(global as GlobalWithPrisma).prisma) {
     (global as GlobalWithPrisma).prisma = new PrismaClient();
   }
-  prisma = (global as GlobalWithPrisma).prisma;
+  prisma = (global as GlobalWithPrisma).prisma as PrismaClient;
 }
 
 export default prisma; 
