@@ -1,5 +1,4 @@
 import { verifyToken } from './jwt';
-import { cookies } from 'next/headers';
 import { NextRequest } from 'next/server';
 
 export async function getUser(req: NextRequest) {
