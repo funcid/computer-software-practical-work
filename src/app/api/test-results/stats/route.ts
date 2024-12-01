@@ -1,28 +1,27 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { verifyToken } from '@/lib/jwt';
+import { headers } from 'next/headers';
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.email) {
+    // Получаем токен из заголовков
+    const headersList = headers();
+    const token = headersList.get('authorization')?.split(' ')[1];
+
+    if (!token) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Получаем id пользователя
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { id: true }
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    // Верифицируем токен и получаем id пользователя
+    const payload = verifyToken(token);
+    if (!payload?.id) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     // Получаем общее количество результатов пользователя
     const totalResults = await prisma.testResult.count({
-      where: { userId: user.id }
+      where: { userId: payload.id }
     });
 
     // Получаем агрегированные данные по диапазонам для пользователя
@@ -33,7 +32,7 @@ export async function GET() {
         
         const count = await prisma.testResult.count({
           where: {
-            userId: user.id,
+            userId: payload.id,
             percentage: {
               gte: min,
               lt: max,
@@ -52,7 +51,7 @@ export async function GET() {
 
     // Получаем дополнительную статистику пользователя
     const stats = await prisma.testResult.aggregate({
-      where: { userId: user.id },
+      where: { userId: payload.id },
       _avg: {
         percentage: true,
         score: true,
@@ -68,7 +67,7 @@ export async function GET() {
     // Получаем статистику по типам тестов
     const testTypeStats = await prisma.testResult.groupBy({
       by: ['testType'],
-      where: { userId: user.id },
+      where: { userId: payload.id },
       _count: true,
       _avg: {
         percentage: true,
