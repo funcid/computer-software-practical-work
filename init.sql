@@ -1,0 +1,17 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    name VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE test_results (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    test_type VARCHAR(50) NOT NULL,
+    score INTEGER NOT NULL,
+    max_score INTEGER NOT NULL,
+    percentage DECIMAL(5,2) NOT NULL,
+    completed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+); 
