@@ -38,13 +38,8 @@ export async function middleware(request: NextRequest) {
           headers: requestHeaders,
         },
       });
-    } catch (error) {
-      if (path.startsWith('/api/')) {
-        return NextResponse.json(
-          { error: 'Invalid token' },
-          { status: 401 }
-        );
-      }
+    } catch (_error) {
+      // Игнорируем ошибку или обрабатываем её
       return NextResponse.redirect(new URL('/login', request.url));
     }
   }

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import GlobalTestsHistogram from '@/components/GlobalTestsHistogram';
+import Cookies from 'js-cookie';
 
 interface LastTestResult {
   score: number;
