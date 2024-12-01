@@ -1,34 +1,45 @@
 import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { getUser } from '@/lib/auth';
 import prisma from '@/lib/prisma';
-import type { NextRequest } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUser(request);
+    const payload = await getUser(request);
     
-    if (!user) {
+    if (!payload) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
     }
 
+    const userId = parseInt(payload.id, 10);
+
+    const totalResults = await prisma.testResult.count({
+      where: { userId }
+    });
+
+    const ranges = await Promise.all([
+      // ... остальной код
+    ]);
+
     const results = await prisma.testResult.findMany({
       where: {
-        userId: user.id
+        userId
       },
       orderBy: {
         completedAt: 'desc'
       }
     });
 
-    return NextResponse.json({ results });
-  } catch (error) {
-    console.error('Error fetching user test results:', error);
-    return NextResponse.json(
-      { error: 'Server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      results,
+      totalResults,
+      ranges
+    });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    return NextResponse.json({ message: errorMessage }, { status: 500 });
   }
 } 
